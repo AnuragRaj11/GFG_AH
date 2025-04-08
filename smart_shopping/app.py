@@ -1,25 +1,29 @@
 from agents.customer_agent import CustomerAgent
-from agents.recommendation_agent import RecommendationAgent
 from agents.product_agent import ProductAgent
+from agents.recommendation_agent import RecommendationAgent
+from utils.data_loader import load_user_data, load_product_data
+from database.db_manager import create_tables
 
 def main():
-    # Initialize agents
+    print("⏳ Setting up...")
+    create_tables()
+    load_user_data()
+    load_product_data()
+
     customer_agent = CustomerAgent()
-    rec_agent = RecommendationAgent()
     product_agent = ProductAgent()
+    rec_agent = RecommendationAgent()
 
-    # Simulate a customer interaction:
-    # Assume user 1 clicks on product 101
-    customer_agent.log_interaction(user_id=1, product_id=101, action='click')
+    user_id = 'CUST123'  # Replace with real Customer_ID from dataset
+    product_id = 'P11872'  # Replace with Product_ID
+    action = 'click'
 
-    # Generate recommendations based on user history
-    recommendations = rec_agent.generate_recommendations(user_id=1)
-    print("Final Recommendations for User 1:", recommendations)
+    customer_agent.log_interaction(user_id, product_id, action)
 
-    # Optionally, fetch and display product details for one recommended product:
-    if recommendations:
-        product_details = product_agent.get_product_info(recommendations[0])
-        print("Details for recommended product:", product_details)
+    print(f"🔍 Recommendations for {user_id}:")
+    recommendations = rec_agent.generate_recommendations(user_id)
+    for pid in recommendations:
+        print(product_agent.get_product_info(pid))
 
 if __name__ == '__main__':
     main()

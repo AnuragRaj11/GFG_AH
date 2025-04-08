@@ -102,14 +102,20 @@ def build_recommender():
     df = pd.read_sql("SELECT * FROM Products", conn)
     conn.close()
 
-    # Handle missing columns gracefully
+    # Safely combine available columns
     df['description'] = (
-        df.get('Category', pd.Series('')).fillna('') + ' ' +
-        df.get('Subcategory', pd.Series('')).fillna('') + ' ' +
-        df.get('Brand', pd.Series('')).fillna('') + ' ' +
-        df.get('Season', pd.Series('')).fillna('') + ' ' +
-        df.get('Geographical_Location', pd.Series('')).fillna('')
+        df.get('Category', pd.Series([''] * len(df))).fillna('').astype(str) + ' ' +
+        df.get('Subcategory', pd.Series([''] * len(df))).fillna('').astype(str) + ' ' +
+        df.get('Brand', pd.Series([''] * len(df))).fillna('').astype(str) + ' ' +
+        df.get('Season', pd.Series([''] * len(df))).fillna('').astype(str) + ' ' +
+        df.get('Geographical_Location', pd.Series([''] * len(df))).fillna('').astype(str)
     )
+
+    # Remove rows where description is entirely empty
+    df = df[df['description'].str.strip() != '']
+    if df.empty:
+        st.warning("No valid product descriptions available to compute recommendations.")
+        return pd.DataFrame(), []
 
     tfidf = TfidfVectorizer(stop_words='english')
     tfidf_matrix = tfidf.fit_transform(df['description'])

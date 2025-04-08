@@ -102,12 +102,13 @@ def build_recommender():
     df = pd.read_sql("SELECT * FROM Products", conn)
     conn.close()
 
+    # Handle missing columns gracefully
     df['description'] = (
-        df['Category'].fillna('') + ' ' +
-        df['Subcategory'].fillna('') + ' ' +
-        df['Brand'].fillna('') + ' ' +
-        df['Season'].fillna('') + ' ' +
-        df['Geographical_Location'].fillna('')
+        df.get('Category', pd.Series('')).fillna('') + ' ' +
+        df.get('Subcategory', pd.Series('')).fillna('') + ' ' +
+        df.get('Brand', pd.Series('')).fillna('') + ' ' +
+        df.get('Season', pd.Series('')).fillna('') + ' ' +
+        df.get('Geographical_Location', pd.Series('')).fillna('')
     )
 
     tfidf = TfidfVectorizer(stop_words='english')
@@ -115,6 +116,7 @@ def build_recommender():
     sim_matrix = cosine_similarity(tfidf_matrix)
 
     return df, sim_matrix
+
 
 def generate_recommendations(user_id, top_n=5):
     conn = get_connection()

@@ -1,18 +1,24 @@
 import streamlit as st
+import os
 from agents.customer_agent import CustomerAgent
 from agents.product_agent import ProductAgent
 from agents.recommendation_agent import RecommendationAgent
 from utils.data_loader import load_user_data, load_product_data
 from database.db_manager import create_tables
 
-# Setup DB and load data
-create_tables()
-load_user_data()
-load_product_data()
-
+# Setup Streamlit page
 st.set_page_config(page_title="Smart Shopping Recommender", layout="centered")
 st.title("🛍️ Smart Shopping AI Recommender")
 
+# Setup DB and load data safely
+create_tables()
+if os.path.exists("data/customer_data_collection.csv") and os.path.exists("data/product_recommendation_data.csv"):
+    load_user_data()
+    load_product_data()
+else:
+    st.warning("📂 Please ensure both customer and product CSV files are in the `data/` folder.")
+
+# UI Inputs
 user_id = st.text_input("Enter Customer ID (e.g., CUST123):")
 product_id = st.text_input("Last Viewed Product ID (e.g., P11872):")
 

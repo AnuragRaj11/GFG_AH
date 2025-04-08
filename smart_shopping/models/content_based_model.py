@@ -11,7 +11,17 @@ class ContentBasedRecommender:
     def _load_data(self):
         conn = get_connection()
         df = pd.read_sql("SELECT * FROM Products", conn)
-        df['combined'] = df['description'].fillna('') + ' ' + df['Category'].fillna('') + ' ' + df['Brand'].fillna('')
+
+        # Create synthetic description using available columns
+        df['description'] = (
+            df['Category'].fillna('') + ' ' +
+            df['Subcategory'].fillna('') + ' ' +
+            df['Brand'].fillna('') + ' ' +
+            df['Season'].fillna('') + ' ' +
+            df['Geographical_Location'].fillna('')
+        )
+
+        df['combined'] = df['description']
         conn.close()
         return df
 

@@ -102,27 +102,26 @@ def build_recommender():
     df = pd.read_sql("SELECT * FROM Products", conn)
     conn.close()
 
-    # Safely combine available columns
+    # Build synthetic description safely
     df['description'] = (
-        df.get('Category', pd.Series([''] * len(df))).fillna('').astype(str) + ' ' +
-        df.get('Subcategory', pd.Series([''] * len(df))).fillna('').astype(str) + ' ' +
-        df.get('Brand', pd.Series([''] * len(df))).fillna('').astype(str) + ' ' +
-        df.get('Season', pd.Series([''] * len(df))).fillna('').astype(str) + ' ' +
-        df.get('Geographical_Location', pd.Series([''] * len(df))).fillna('').astype(str)
+        df.get('Category', pd.Series('', index=df.index)).fillna('').astype(str) + ' ' +
+        df.get('Subcategory', pd.Series('', index=df.index)).fillna('').astype(str) + ' ' +
+        df.get('Brand', pd.Series('', index=df.index)).fillna('').astype(str) + ' ' +
+        df.get('Season', pd.Series('', index=df.index)).fillna('').astype(str) + ' ' +
+        df.get('Geographical_Location', pd.Series('', index=df.index)).fillna('').astype(str)
     )
 
-    # Remove rows where description is entirely empty
+    # Drop rows with empty descriptions
     df = df[df['description'].str.strip() != '']
     if df.empty:
-        st.warning("No valid product descriptions available to compute recommendations.")
-        return pd.DataFrame(), []
+        return pd.DataFrame(), []  # Return empty to avoid failure
 
+    # TF-IDF and similarity matrix
     tfidf = TfidfVectorizer(stop_words='english')
     tfidf_matrix = tfidf.fit_transform(df['description'])
     sim_matrix = cosine_similarity(tfidf_matrix)
 
     return df, sim_matrix
-
 
 def generate_recommendations(user_id, top_n=5):
     conn = get_connection()
@@ -137,9 +136,10 @@ def generate_recommendations(user_id, top_n=5):
     if not last:
         return []
 
-    df, sim_matrix = build_recommender()
     product_id = last[0]
-    if product_id not in df['Product_ID'].values:
+    df, sim_matrix = build_recommender()
+    if df.empty or not sim_matrix:
+        st.warning("⚠️ Not enough valid product descriptions to generate recommendations.")
         return []
 
     idx = df.index[df['Product_ID'] == product_id][0]

@@ -103,15 +103,18 @@ def build_recommender():
     df = pd.read_sql("SELECT * FROM Products", conn)
     conn.close()
 
+    # Build a rich description using relevant columns
     df['description'] = (
-        df.get('Category', pd.Series('', index=df.index)).fillna('').astype(str) + ' ' +
-        df.get('Subcategory', pd.Series('', index=df.index)).fillna('').astype(str) + ' ' +
-        df.get('Brand', pd.Series('', index=df.index)).fillna('').astype(str) + ' ' +
-        df.get('Season', pd.Series('', index=df.index)).fillna('').astype(str) + ' ' +
-        df.get('Geographical_Location', pd.Series('', index=df.index)).fillna('').astype(str)
+        df['Category'].fillna('') + ' ' +
+        df['Subcategory'].fillna('') + ' ' +
+        df['Brand'].fillna('') + ' ' +
+        df['Season'].fillna('') + ' ' +
+        df['Geographical_Location'].fillna('')
     )
 
-    df = df[df['description'].str.strip() != '']
+    # Drop rows where description is empty or invalid
+    df['description'] = df['description'].str.strip()
+    df = df[df['description'] != '']
     if df.empty:
         return pd.DataFrame(), None
 
@@ -120,6 +123,7 @@ def build_recommender():
     sim_matrix = cosine_similarity(tfidf_matrix)
 
     return df, sim_matrix
+
 
 def generate_recommendations(user_id, top_n=5):
     conn = get_connection()

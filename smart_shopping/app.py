@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import sqlite3
 import streamlit as st
+import numpy as np
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -102,7 +103,6 @@ def build_recommender():
     df = pd.read_sql("SELECT * FROM Products", conn)
     conn.close()
 
-    # Build synthetic description safely
     df['description'] = (
         df.get('Category', pd.Series('', index=df.index)).fillna('').astype(str) + ' ' +
         df.get('Subcategory', pd.Series('', index=df.index)).fillna('').astype(str) + ' ' +
@@ -111,12 +111,10 @@ def build_recommender():
         df.get('Geographical_Location', pd.Series('', index=df.index)).fillna('').astype(str)
     )
 
-    # Drop rows with empty descriptions
     df = df[df['description'].str.strip() != '']
     if df.empty:
-        return pd.DataFrame(), []  # Return empty to avoid failure
+        return pd.DataFrame(), None
 
-    # TF-IDF and similarity matrix
     tfidf = TfidfVectorizer(stop_words='english')
     tfidf_matrix = tfidf.fit_transform(df['description'])
     sim_matrix = cosine_similarity(tfidf_matrix)
@@ -138,7 +136,8 @@ def generate_recommendations(user_id, top_n=5):
 
     product_id = last[0]
     df, sim_matrix = build_recommender()
-    if df.empty or not sim_matrix:
+
+    if df.empty or sim_matrix is None or (isinstance(sim_matrix, np.ndarray) and sim_matrix.size == 0):
         st.warning("⚠️ Not enough valid product descriptions to generate recommendations.")
         return []
 

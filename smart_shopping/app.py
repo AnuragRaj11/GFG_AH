@@ -1,9 +1,9 @@
 import os
 import streamlit as st
 from database.db_manager import create_tables
-from data_loader import load_user_data, load_product_data
-from recommendation_agent import RecommendationAgent
-from product_agent import ProductAgent
+from utils.data_loader import load_user_data, load_product_data
+from agents.recommendation_agent import RecommendationAgent
+from agents.product_agent import ProductAgent
 
 # Streamlit UI
 st.set_page_config(page_title="Smart Shopping Recommender", layout="centered")

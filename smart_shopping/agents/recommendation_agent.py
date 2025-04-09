@@ -5,7 +5,11 @@ class RecommendationAgent:
     def __init__(self):
         self.recommender = ContentBasedRecommender()
 
-    def generate_recommendations(self, user_id):
+def generate_recommendations(self, user_id, product_id=None):
+    if product_id:
+        return self.recommender.recommend(product_id)
+    else:
+        # fallback to last interaction
         conn = get_connection()
         cursor = conn.cursor()
         cursor.execute('''
@@ -15,8 +19,5 @@ class RecommendationAgent:
         ''', (user_id,))
         last = cursor.fetchone()
         conn.close()
+        return self.recommender.recommend(last[0]) if last else []
 
-        if last:
-            return self.recommender.recommend(last[0])
-        else:
-            return []

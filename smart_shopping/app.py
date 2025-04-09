@@ -28,7 +28,7 @@ if st.button("Get Recommendations"):
     if not user_id or not product_id:
         st.warning("Please enter both Customer ID and Product ID.")
     else:
-        recommendations = recommendation_agent.generate_recommendations(user_id)
+        recommendations = recommendation_agent.generate_recommendations(user_id, product_id)
 
         if recommendations:
             st.success(f"Top {len(recommendations)} Recommended Products for {user_id}:")

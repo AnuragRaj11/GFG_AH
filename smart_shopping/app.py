@@ -2,6 +2,9 @@ import sys
 import os
 import streamlit as st
 
+# Make sure to set the page configuration first
+st.set_page_config(page_title="Smart Shopping Recommender", layout="centered")
+
 # Add the repository root (parent of this file) to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -17,8 +20,7 @@ try:
 except Exception as e:
     st.error("Error accessing data folder: " + str(e))
 
-# Streamlit UI
-st.set_page_config(page_title="Smart Shopping Recommender", layout="centered")
+# Continue with the rest of the UI
 st.title("🛍️ Smart Shopping AI Recommender")
 
 # Initialize database and load data

@@ -4,7 +4,6 @@ import streamlit as st
 
 # Make sure to set the page configuration first
 st.set_page_config(page_title="Smart Shopping Recommender", layout="centered")
-
 # Add the repository root (parent of this file) to sys.path
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -14,7 +13,7 @@ from agents.recommendation_agent import RecommendationAgent
 from agents.product_agent import ProductAgent
 
 # Debug: Check working directory and list files in data folder
-st.write("Current working directory:", os.getcwd())
+st.write("✅ Environment initialized.")
 try:
     st.write("Files in data folder:", os.listdir("data"))
 except Exception as e:

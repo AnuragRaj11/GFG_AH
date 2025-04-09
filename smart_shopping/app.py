@@ -1,5 +1,10 @@
+import sys
 import os
 import streamlit as st
+
+# Add the repository root (parent of this file) to sys.path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 from database.db_manager import create_tables
 from utils.data_loader import load_user_data, load_product_data
 from agents.recommendation_agent import RecommendationAgent
@@ -19,7 +24,7 @@ st.title("🛍️ Smart Shopping AI Recommender")
 # Initialize database and load data
 create_tables()
 
-# Use constructed absolute paths (if needed):
+# Construct absolute paths for CSV files
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 user_data_path = os.path.join(BASE_DIR, "data", "customer_data_collection.csv")
 product_data_path = os.path.join(BASE_DIR, "data", "product_recommendation_data.csv")

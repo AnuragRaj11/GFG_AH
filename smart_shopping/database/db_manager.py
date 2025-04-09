@@ -1,47 +1,54 @@
 import sqlite3
+import os
 
-DB_PATH = "smart_shopping.db"
+DB_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "smart_shopping.db")
 
 def get_connection():
-    conn = sqlite3.connect(DB_PATH)
-    return conn
+    return sqlite3.connect(DB_PATH)
 
 def create_tables():
     conn = get_connection()
     cursor = conn.cursor()
 
-    cursor.execute("PRAGMA foreign_keys = ON;")
-
+    # Create Users table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Users (
-            Customer_ID TEXT PRIMARY KEY,
-            Gender TEXT,
-            Age INTEGER,
-            Location TEXT,
-            Marital_Status TEXT,
-            Purchase_History TEXT
+            user_id TEXT PRIMARY KEY,
+            name TEXT,
+            email TEXT,
+            location TEXT
         );
     ''')
 
+    # ✅ Create Products table with all required fields
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS Products (
             Product_ID TEXT PRIMARY KEY,
-            description TEXT,
             Category TEXT,
+            Subcategory TEXT,
             Price REAL,
-            Brand TEXT
+            Brand TEXT,
+            Average_Rating_of_Similar_Products REAL,
+            Product_Rating REAL,
+            Customer_Review_Sentiment_Score REAL,
+            Holiday TEXT,
+            Season TEXT,
+            Geographical_Location TEXT,
+            Similar_Product_List TEXT,
+            Probability_of_Recommendation REAL
         );
     ''')
 
+    # Create User_Interactions table
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS User_Interactions (
-            interaction_id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id TEXT,
             product_id TEXT,
             action TEXT,
             timestamp TEXT,
-            FOREIGN KEY(user_id) REFERENCES Users(Customer_ID),
-            FOREIGN KEY(product_id) REFERENCES Products(Product_ID)
+            FOREIGN KEY (user_id) REFERENCES Users(user_id),
+            FOREIGN KEY (product_id) REFERENCES Products(Product_ID)
         );
     ''')
 

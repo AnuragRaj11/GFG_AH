@@ -6,31 +6,41 @@ from database.db_manager import get_connection
 class ContentBasedRecommender:
     def __init__(self):
         self.df = self._load_data()
-        self.sim_matrix = self._build_similarity_matrix()
+        if not self.df.empty:
+            self.sim_matrix = self._build_similarity_matrix()
+        else:
+            self.sim_matrix = None
 
     def _load_data(self):
         conn = get_connection()
         df = pd.read_sql("SELECT * FROM Products", conn)
+        conn.close()
 
-        # Create synthetic description using available columns
+        # Create more robust description using available columns
         df['description'] = (
             df['Category'].fillna('') + ' ' +
             df['Subcategory'].fillna('') + ' ' +
             df['Brand'].fillna('') + ' ' +
-            df['Season'].fillna('') + ' ' +
-            df['Geographical_Location'].fillna('')
-        )
+            df.get('Season', '').fillna('') + ' ' +
+            df.get('Geographical_Location', '').fillna('')
+        ).str.strip()
 
-        df['combined'] = df['description']
-        conn.close()
+        # Remove products with empty descriptions
+        df = df[df['description'] != '']
         return df
 
     def _build_similarity_matrix(self):
+        if self.df.empty:
+            return None
+            
         tfidf = TfidfVectorizer(stop_words='english')
-        tfidf_matrix = tfidf.fit_transform(self.df['combined'])
+        tfidf_matrix = tfidf.fit_transform(self.df['description'])
         return cosine_similarity(tfidf_matrix)
 
     def recommend(self, product_id, top_n=5):
+        if self.sim_matrix is None or self.df.empty:
+            return []
+
         if product_id not in self.df['Product_ID'].values:
             return []
 

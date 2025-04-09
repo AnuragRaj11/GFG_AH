@@ -103,17 +103,16 @@ def build_recommender():
     df = pd.read_sql("SELECT * FROM Products", conn)
     conn.close()
 
-    # Build a rich description using relevant columns
     df['description'] = (
         df['Category'].fillna('') + ' ' +
         df['Subcategory'].fillna('') + ' ' +
         df['Brand'].fillna('') + ' ' +
         df['Season'].fillna('') + ' ' +
         df['Geographical_Location'].fillna('')
-    )
+    ).str.strip()
 
-    # Drop rows where description is empty or invalid
-    df['description'] = df['description'].str.strip()
+    st.write("🧪 Sample descriptions:", df['description'].head())
+
     df = df[df['description'] != '']
     if df.empty:
         return pd.DataFrame(), None
@@ -123,7 +122,6 @@ def build_recommender():
     sim_matrix = cosine_similarity(tfidf_matrix)
 
     return df, sim_matrix
-
 
 def generate_recommendations(user_id, top_n=5):
     conn = get_connection()
@@ -145,7 +143,11 @@ def generate_recommendations(user_id, top_n=5):
         st.warning("⚠️ Not enough valid product descriptions to generate recommendations.")
         return []
 
-    idx = df.index[df['Product_ID'] == product_id][0]
+    matching = df.index[df['Product_ID'] == product_id]
+    if matching.empty:
+        return []
+
+    idx = matching[0]
     sim_scores = list(enumerate(sim_matrix[idx]))
     sim_scores = sorted(sim_scores, key=lambda x: x[1], reverse=True)[1:top_n+1]
     recommended_ids = [df.iloc[i[0]]['Product_ID'] for i in sim_scores]
